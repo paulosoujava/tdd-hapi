@@ -1,5 +1,5 @@
 const BaseRoute = require('./base/baseRoute'),
-    Joi = require("joi"),
+    Joi = require("@hapi/joi"),
     Boom = require("boom")
 
 
@@ -8,6 +8,21 @@ const failAction = (r, h, e) => { throw e }
 const headers = Joi.object({
     authorization: Joi.string().required()
 }).unknown()
+
+const ModelUser = Joi.object({
+    id: Joi.string().description('abcd123efg456'),
+    nome: Joi.string().description("Chapolin Colorado"),
+    poder: Joi.string().description("marreta bionica"),
+}).label('Model_User');
+
+const Model500 = Joi.object({
+    message: Joi.string().description('Erro Interno')
+}).label('Model500');
+
+const Model400 = Joi.object({
+    message: Joi.string().description('Bad Request')
+}).label('Model400');
+
 
 class AppRoutes extends BaseRoute {
     constructor(db) {
@@ -23,6 +38,15 @@ class AppRoutes extends BaseRoute {
         return {
             path: '/herois',
             method: 'GET',
+            handler: (request) => {
+                try {
+                    const { skip, limit, nome } = request.query
+                    let query = { nome: { $regex: `.*${nome}*.` } }
+                    return this._db.read(nome ? query : {}, skip, limit)
+                } catch (error) {
+                    return Boom.internal()
+                }
+            },
             config: {
                 validate: {
                     failAction,
@@ -32,24 +56,30 @@ class AppRoutes extends BaseRoute {
                         limit: Joi.number().integer().default(10),
                         nome: Joi.string().min(3).max(100),
                     })
-                }
-            },
-            handler: (request, headers) => {
-                try {
-                    const { skip, limit, nome } = request.query
+                },
+                tags: ['api'],
+                description: 'GET USERS',
+                notes: 'Rotorna todos os usuário do BD necessita de um token para obter livre acesso',
+                plugins: {
+                    payloadType: 'form',
+                    'hapi-swagger': {
+                        responses: {
+                            500: {
+                                description: 'Retorna um erro do servidor, algo não saiu como planejado',
+                                schema: Model500
+                            },
+                            400: {
+                                description: 'Uma má requisição foi feita, todos os paramentros devem ser enviados username min 3 max 15 e senha min 3 max 8',
+                                schema: Model400
+                            },
+                            200: {
+                                description: 'Pode comemorar por que deu tudo certo e um token foi retornado para você utilizar na api',
+                                schema: ModelUser
+                            },
 
-                    let query = {
-                        nome: {
-                            $regex: `.*${nome}*.`
                         }
                     }
-
-                    return this._db.read(nome ? query : {}, skip, limit)
-                } catch (error) {
-                    /* istanbul ignore next */
-                    return Boom.internal()
                 }
-
             }
         }
     }
@@ -59,6 +89,14 @@ class AppRoutes extends BaseRoute {
             path: '/herois',
             method: 'POST',
             config: {
+                tags: ['api'],
+                description: 'Cadastra um heroi, com nome e poder',
+                notes: 'Com o method POST você DEVE enviar um nome e um poder',
+                plugins: {
+                    'hapi-swagger': {
+                        payloadType: 'form'
+                    }
+                },
                 validate: {
                     failAction,
                     headers,
@@ -123,18 +161,6 @@ class AppRoutes extends BaseRoute {
             path: '/herois/{id}',
             method: 'PUT',
             config: {
-                tags: ['api'],
-                description: 'Cadastra um heroi, com nome e poder',
-                notes: 'Com o method POST você DEVE enviar um nome e um poder',
-                plugins: {
-                    'hapi-swagger': {
-                        responses: {
-                            500: { 'description': 'Internal error' },
-                            400: { 'description': 'BadRequest' },
-                            200: { 'description': 'Ok' }
-                        }
-                    }
-                },
                 validate: {
                     failAction,
                     headers,

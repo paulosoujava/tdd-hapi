@@ -2,8 +2,7 @@ const assert = require('assert'),
     api = require('./../api'),
     Context = require('./../src/db/base/context'),
     MongoDB = require('./../src/db/mongo/mongo'),
-    AuthSchema = require('./../src/db/mongo/schemas/authSchema'),
-    PasswordHelp = require('./../src/helpers/passwordHelper')
+    AuthSchema = require('./../src/db/mongo/schemas/authSchema')
 
 
 let app = {}
@@ -29,33 +28,35 @@ describe('Suite de testes Auth', function() {
 
     it('Deve obter um token validando o usuario no mongo', async() => {
         const res = await app.inject({
-                method: 'POST',
-                url: '/login',
-                payload: {
-                    username: 'paulo',
-                    password: 'Paulo@123'
+            method: 'POST',
+            url: '/login',
+            payload: {
+                username: 'paulo',
+                password: 'Paulo@123'
 
-                }
-            })
-            //*********************************************
-            //PAYLOAD COM O FailAction
-            //********************************************* 
-            /*
-                payload: '{
-                  "statusCode":400,
-                  "error":"Bad Request",
-                  "message":"child \\"password\\" fails because [\\"password\\" is required]",
-                  "validation":{"source":"payload","keys":["password"]}}',
-            */
-            //*********************************************
-            //PAYLOAD SEM O FailAction
-            //********************************************* 
-            /*
-              payload: '{
-                "statusCode":400,
-                "error":"Bad Request",
-                "message":"Invalid request payload input"}',
-            */
+            }
+        })
+
+        //console.log(res);
+        //*********************************************
+        //PAYLOAD COM O FailAction
+        //********************************************* 
+        /*
+            payload: '{
+              "statusCode":400,
+              "error":"Bad Request",
+              "message":"child \\"password\\" fails because [\\"password\\" is required]",
+              "validation":{"source":"payload","keys":["password"]}}',
+        */
+        //*********************************************
+        //PAYLOAD SEM O FailAction
+        //********************************************* 
+        /*
+          payload: '{
+            "statusCode":400,
+            "error":"Bad Request",
+            "message":"Invalid request payload input"}',
+        */
 
         //console.log(res.statusCode); //400
         //console.log(res.statusMessage); //BAd Request

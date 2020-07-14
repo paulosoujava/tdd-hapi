@@ -11,13 +11,7 @@ const JWT_SECRET = 'mabru'
 const Inert = require('@hapi/inert');
 const Vision = require('@hapi/vision');
 const HapiSwagger = require('hapi-swagger');
-const swaggerOptions = {
-    info: {
-        title: 'Test API Documentation',
-        version: 'v1',
 
-    },
-};
 
 
 //MONGO
@@ -26,11 +20,8 @@ const MongoDB = require('./src/db/mongo/mongo');
 const HeroSchema = require('./src/db/mongo/schemas/heroSchema');
 const AuthSchema = require('./src/db/mongo/schemas/authSchema');
 
-const app = new Hapi.Server({
-    port: 5000
-})
 
-
+const app = new Hapi.Server({ port: 5000 })
 
 function mapRoutes(instance, methods) {
     return methods.map(m => instance[m]())
@@ -39,12 +30,29 @@ function mapRoutes(instance, methods) {
 
 async function main() {
 
+    // ** INIT MONGO
+    const connection = MongoDB.connect()
+    const mongoDb = new Context(new MongoDB(connection, HeroSchema))
+    const authDb = new Context(new MongoDB(connection, AuthSchema))
 
-    //REGISTER
+
+
+    //REGISTER SWAGGER
+    const swaggerOptions = {
+        info: {
+            title: 'Test API Documentation',
+            version: '5.14.3',
+            contact: {
+                name: 'Paulo Oliveira',
+                email: 'paulosoujava@gmail.com'
+            },
+
+        }
+    }
     await app.register([
         HapiJwt,
-        Inert,
         Vision,
+        Inert,
         {
             plugin: HapiSwagger,
             options: swaggerOptions
@@ -55,26 +63,17 @@ async function main() {
     app.auth.strategy('jwt', 'jwt', {
         key: JWT_SECRET,
         // options: {
-        //     expiresIn: 3000
-        // },
+        //     expiersIn: 20
+        // }
         validate: async(dado, request) => {
-            //console.log("DADOS STRATEGY", dado);
-            const [result] = await authDb.read({
-                    username: dado.username
-                })
-                //aqui serve para verificar se a sessão continua ativa
-                //se o usuário continua ativo
-                //  console.log("ISVALID", (result ? true : false));
-            return { isValid: result ? true : false }
+            //verificacoes no banco se usuario continua ativo, se pagamento em dia etc...
+            //console.log("DADOS", dado.user);
+            const [result] = await authDb.read({ username: dado.user, })
+            return { isValid: (result ? true : false) }
 
         }
     })
     app.auth.default('jwt')
-
-    // ** INIT MONGO
-    const connection = MongoDB.connect()
-    const mongoDb = new Context(new MongoDB(connection, HeroSchema))
-    const authDb = new Context(new MongoDB(connection, AuthSchema))
 
 
     app.route([
