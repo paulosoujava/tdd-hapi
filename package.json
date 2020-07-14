@@ -4,9 +4,9 @@
     "main": "index.js",
     "license": "MIT",
     "scripts": {
-        "test:i": "mocha --timeout 10000  __tests__/integration/*.test.js ",
-        "test:ic": "nyc --reporter=text  mocha __tests__/integration/*.test.js --timeout 10000 --exit",
-        "test:ich": "nyc --reporter=html --reporter=text  mocha __tests__/integration/*.test.js --timeout 10000 --exit"
+        "test:i": "mocha tests/*.test.js --timeout 10000 --exit",
+        "test:ic": "nyc --reporter=text  mocha tests/*.test.js --timeout 10000 --exit",
+        "test:ich": "nyc --reporter=html --reporter=text  mocha tests/*.test.js --timeout 10000 --exit"
     },
     "devDependencies": {
         "mocha": "^5.2.0",

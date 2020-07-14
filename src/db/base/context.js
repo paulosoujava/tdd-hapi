@@ -1,5 +1,6 @@
   const ICrud = require('./../interface/interfaceCrud')
 
+  /* istanbul ignore next */
   class Context extends ICrud {
       constructor(context) {
           super()

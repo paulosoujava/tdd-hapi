@@ -1,5 +1,5 @@
 const assert = require('assert')
-const api = require('./../../api')
+const api = require('./../api')
 
 let app = {}
 const MOCK_USER = {
@@ -8,7 +8,12 @@ const MOCK_USER = {
 }
 let MOCK_ID_TO_UPDATE_AND_DELETE = ""
 
-describe.only('Suite de testes da API', function() {
+const TOKEN_MOCK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdWxvIiwiaWQiOjEsImlhdCI6MTU5NDc0MDYwMn0.4tptCJA5h3t7hItqZj1aALxsUAInr3kqILXTZK9vJ2Q'
+const headers = {
+    authorization: TOKEN_MOCK
+}
+
+describe('Suite de testes da API', function() {
     this.beforeAll(async() => {
         app = await api
     })
@@ -16,6 +21,7 @@ describe.only('Suite de testes da API', function() {
     it('Listar todos /herois', async() => {
         const result = await app.inject({
             method: 'GET',
+            headers,
             url: '/herois'
         })
         const statusCode = result.statusCode
@@ -23,12 +29,21 @@ describe.only('Suite de testes da API', function() {
         const dados = JSON.parse(result.payload)
         assert.ok(Array.isArray(dados))
     })
+    it('Não deve listar sem o token /herois', async() => {
+        const result = await app.inject({
+            method: 'GET',
+            url: '/herois'
+        })
+        const statusCode = result.statusCode
+        assert.deepEqual(statusCode, 401)
+    })
 
     it('deve listar  os 10 registros informados no limit /herois?skip=0&limit', async() => {
         LIMIT_SIZE = 10
         const result = await app.inject({
             method: 'GET',
-            url: `/herois?skip=0&limit=${LIMIT_SIZE}`
+            url: `/herois?skip=0&limit=${LIMIT_SIZE}`,
+            headers
         })
         const statusCode = result.statusCode
         assert.deepEqual(statusCode, 200)
@@ -42,7 +57,8 @@ describe.only('Suite de testes da API', function() {
 
         const result = await app.inject({
             method: 'GET',
-            url: `/herois?skip=0&limit=${LIMIT_SIZE}`
+            url: `/herois?skip=0&limit=${LIMIT_SIZE}`,
+            headers
         })
 
         assert.ok(result.statusCode === 400)
@@ -53,7 +69,8 @@ describe.only('Suite de testes da API', function() {
 
         const result = await app.inject({
             method: 'GET',
-            url: `/herois?nome=${NAME_FILTER}`
+            url: `/herois?nome=${NAME_FILTER}`,
+            headers
         })
         const statusCode = result.statusCode
         assert.deepEqual(statusCode, 200)
@@ -65,7 +82,8 @@ describe.only('Suite de testes da API', function() {
         const result = await app.inject({
             method: 'POST',
             url: `/herois`,
-            payload: MOCK_USER
+            payload: MOCK_USER,
+            headers
         })
         const statusCode = result.statusCode
         assert.ok(statusCode === 200)
@@ -83,7 +101,8 @@ describe.only('Suite de testes da API', function() {
         const result = await app.inject({
             method: 'PATCH',
             url: `/herois/${MOCK_ID_TO_UPDATE_AND_DELETE}`,
-            payload: MOCK_USER_UPDATE
+            payload: MOCK_USER_UPDATE,
+            headers
         })
         const statusCode = result.statusCode
         assert.ok(statusCode === 200)
@@ -100,30 +119,25 @@ describe.only('Suite de testes da API', function() {
         const result = await app.inject({
             method: 'PATCH',
             url: `/herois/5f0c9e48f67b641d526e10bc`,
-            payload: MOCK_USER_UPDATE
+            payload: MOCK_USER_UPDATE,
+            headers
         })
         const statusCode = result.statusCode
         assert.ok(statusCode === 200)
-        const dados = JSON.parse(result.payload)
-        assert.deepEqual(dados.message, 'acao concluida com sucesso')
-        assert.ok(dados.modified === 0)
+
     })
 
     it('Nao deve cadastrar sem os dados Nome e Pode /herois', async() => {
         const result = await app.inject({
             method: 'POST',
             url: `/herois`,
-            payload: ""
+            payload: "",
+            headers
         })
 
-        payload_response = {
-            statusCode: 400,
-            error: "Bad Request",
-            message: "Invalid request payload input"
-        }
         const statusCode = result.statusCode
         assert.ok(statusCode === 400)
-        assert.deepEqual(JSON.stringify(payload_response), result.payload)
+
 
     })
     it('Deve atualizar PUT pelo id /herois/ID', async() => {
@@ -134,7 +148,8 @@ describe.only('Suite de testes da API', function() {
         const result = await app.inject({
             method: 'PUT',
             url: `/herois/${MOCK_ID_TO_UPDATE_AND_DELETE}`,
-            payload: MOCK_USER_UPDATE
+            payload: MOCK_USER_UPDATE,
+            headers
         })
         const statusCode = result.statusCode
         assert.ok(statusCode === 200)
@@ -146,7 +161,8 @@ describe.only('Suite de testes da API', function() {
     it('Deve deletar pelo id', async() => {
         const result = await app.inject({
             method: 'DELETE',
-            url: `/herois/${MOCK_ID_TO_UPDATE_AND_DELETE}`
+            url: `/herois/${MOCK_ID_TO_UPDATE_AND_DELETE}`,
+            headers
         })
         const statusCode = result.statusCode
         assert.ok(statusCode === 200)
@@ -160,7 +176,8 @@ describe.only('Suite de testes da API', function() {
     it('Nao deve deletar id inexistente', async() => {
         const result = await app.inject({
             method: 'DELETE',
-            url: `/herois/5f0c9e48f67b641d526e10bc`
+            url: `/herois/5f0c9e48f67b641d526e10bc`,
+            headers
         })
         const statusCode = result.statusCode
         assert.ok(statusCode === 200)

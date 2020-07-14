@@ -1,12 +1,12 @@
-const ICrud = require('./../interface/interfaceCrud')
-const Mongoose = require('mongoose')
-
-const STATUS = {
-    0: 'Discontadado',
-    1: 'Conectado',
-    2: 'Conectando',
-    3: 'Discontadando',
-}
+const ICrud = require('./../interface/interfaceCrud'),
+    Mongoose = require('mongoose'),
+    Boom = require("boom"),
+    STATUS = {
+        0: 'Discontadado',
+        1: 'Conectado',
+        2: 'Conectando',
+        3: 'Discontadando',
+    }
 
 class MongoDB extends ICrud {
     constructor(connection, schema) {
@@ -17,8 +17,10 @@ class MongoDB extends ICrud {
 
     async isConnected() {
         const state = STATUS[this._connection.readyState]
+            /* istanbul ignore next */
         if (state === 'Conectado')
             return state
+                /* istanbul ignore next */
         if (state !== 'Conectando')
             return state
         await new Promise(resolve => setTimeout(resolve, 1000))
@@ -31,8 +33,8 @@ class MongoDB extends ICrud {
             useNewUrlParser: true,
             useUnifiedTopology: true
         }, (err) => {
-            if (!err) return
-            console.log('Falha na conexão', err);
+            /* istanbul ignore next */
+            if (!err) return Boom.serverUnavailable()
         })
         return Mongoose.connection
     }

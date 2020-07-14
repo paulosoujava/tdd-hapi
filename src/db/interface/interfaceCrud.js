@@ -1,5 +1,6 @@
 const NotImplementedException = require('./../../excpetions/notImplementedException')
 
+/* istanbul ignore next */
 class ICrud {
     create(item) {
         throw new NotImplementedException()

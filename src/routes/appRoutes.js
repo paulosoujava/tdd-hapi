@@ -1,6 +1,13 @@
-const BaseRoute = require('./base/baseRoute')
-const Joi = require("joi")
+const BaseRoute = require('./base/baseRoute'),
+    Joi = require("joi"),
+    Boom = require("boom")
 
+
+const failAction = (r, h, e) => { throw e }
+
+const headers = Joi.object({
+    authorization: Joi.string().required()
+}).unknown()
 
 class AppRoutes extends BaseRoute {
     constructor(db) {
@@ -18,6 +25,8 @@ class AppRoutes extends BaseRoute {
             method: 'GET',
             config: {
                 validate: {
+                    failAction,
+                    headers,
                     query: Joi.object({
                         skip: Joi.number().integer().default(0),
                         limit: Joi.number().integer().default(10),
@@ -37,7 +46,8 @@ class AppRoutes extends BaseRoute {
 
                     return this._db.read(nome ? query : {}, skip, limit)
                 } catch (error) {
-                    return 'error'
+                    /* istanbul ignore next */
+                    return Boom.internal()
                 }
 
             }
@@ -50,6 +60,8 @@ class AppRoutes extends BaseRoute {
             method: 'POST',
             config: {
                 validate: {
+                    failAction,
+                    headers,
                     payload: Joi.object({
                         nome: Joi.string().min(3).max(100).required(),
                         poder: Joi.string().min(3).max(100).required(),
@@ -63,8 +75,8 @@ class AppRoutes extends BaseRoute {
                     return { message: this._message(), _id: result._id }
 
                 } catch (err) {
-                    console.log(err);
-                    return
+                    /* istanbul ignore next */
+                    return Boom.internal()
                 }
             }
         }
@@ -77,6 +89,8 @@ class AppRoutes extends BaseRoute {
             method: 'PATCH',
             config: {
                 validate: {
+                    failAction,
+                    headers,
                     params: Joi.object({
                         id: Joi.string().required()
                     }),
@@ -92,11 +106,12 @@ class AppRoutes extends BaseRoute {
                         const dadosString = JSON.stringify(payload)
                         const dados = JSON.parse(dadosString)
                         const result = await this._db.update(id, dados)
+                            /* istanbul ignore next */
                         return { message: this._message(), modified: result.nModified }
 
                     } catch (err) {
-                        console.log(err);
-                        return
+                        /* istanbul ignore next */
+                        return Boom.internal()
                     }
                 }
             }
@@ -108,7 +123,21 @@ class AppRoutes extends BaseRoute {
             path: '/herois/{id}',
             method: 'PUT',
             config: {
+                tags: ['api'],
+                description: 'Cadastra um heroi, com nome e poder',
+                notes: 'Com o method POST você DEVE enviar um nome e um poder',
+                plugins: {
+                    'hapi-swagger': {
+                        responses: {
+                            500: { 'description': 'Internal error' },
+                            400: { 'description': 'BadRequest' },
+                            200: { 'description': 'Ok' }
+                        }
+                    }
+                },
                 validate: {
+                    failAction,
+                    headers,
                     params: Joi.object({
                         id: Joi.string().required()
                     }),
@@ -124,11 +153,12 @@ class AppRoutes extends BaseRoute {
                         const dadosString = JSON.stringify(payload)
                         const dados = JSON.parse(dadosString)
                         const result = await this._db.update(id, dados)
+                            /* istanbul ignore next */
                         return { message: this._message(), modified: result.nModified }
 
                     } catch (err) {
-                        console.log(err);
-                        return
+                        /* istanbul ignore next */
+                        return Boom.internal()
                     }
                 }
             }
@@ -141,9 +171,11 @@ class AppRoutes extends BaseRoute {
             method: 'DELETE',
             config: {
                 validate: {
+                    failAction,
+                    headers,
                     params: Joi.object({
                         id: Joi.string().required()
-                    }),
+                    })
                 }
             },
             handler: async(request) => {
@@ -152,8 +184,8 @@ class AppRoutes extends BaseRoute {
                     const result = await this._db.delete(id)
                     return { message: this._message(), modified: result.n }
                 } catch (error) {
-                    console.log(err);
-                    return
+                    /* istanbul ignore next */
+                    return Boom.internal()
                 }
             }
         }

@@ -1,12 +1,12 @@
 const assert = require('assert')
-const MongoDB = require('./../../src/db/mongo/mongo')
-const Context = require('./../../src/db/base/context')
-const HeroSchema = require('./../../src/db/mongo/schemas/heroSchema')
+const MongoDB = require('./../src/db/mongo/mongo')
+const Context = require('./../src/db/base/context')
+const HeroSchema = require('./../src/db/mongo/schemas/heroSchema')
 
 let context = {}
 const MOCK_USER = {
-    nome: 'Chapolin Colorado',
-    poder: 'marreta bionica'
+    nome: 'Chapolin Colorado 0',
+    poder: 'marreta bionica 0'
 }
 let MOCK_ID_UPDATE_AND_DELETE = ""
 
