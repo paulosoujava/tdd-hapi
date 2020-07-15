@@ -1,3 +1,15 @@
+const { config } = require('dotenv')
+const { join } = require('path')
+const { ok } = require('assert')
+
+const env = process.env.NODE_ENV || "dev"
+ok(env === 'prod' || env == 'dev', "a env é invalida!!")
+
+const confiPath = join(__dirname, "./config", `.env.${env}`)
+config({
+    path: confiPath
+})
+
 const Hapi = require('@hapi/hapi');
 const AppRoute = require('./src/routes/appRoutes')
 const AuthRoutes = require('./src/routes/authRoutes')
@@ -5,7 +17,7 @@ const AuthRoutes = require('./src/routes/authRoutes')
 
 //JWT
 const HapiJwt = require('hapi-auth-jwt2')
-const JWT_SECRET = 'mabru'
+const JWT_SECRET = process.env.JWT_KEY
 
 //SWAGGER
 const Inert = require('@hapi/inert');
@@ -21,7 +33,7 @@ const HeroSchema = require('./src/db/mongo/schemas/heroSchema');
 const AuthSchema = require('./src/db/mongo/schemas/authSchema');
 
 
-const app = new Hapi.Server({ port: 5000 })
+const app = new Hapi.Server({ port: process.env.PORT })
 
 function mapRoutes(instance, methods) {
     return methods.map(m => instance[m]())
@@ -62,16 +74,19 @@ async function main() {
     //STRATEGY
     app.auth.strategy('jwt', 'jwt', {
         key: JWT_SECRET,
-        // options: {
-        //     expiersIn: 20
-        // }
         validate: async(dado, request) => {
             //verificacoes no banco se usuario continua ativo, se pagamento em dia etc...
-            //console.log("DADOS", dado.user);
+            //console.log("DADOS", dado);
+            if (Date.now() >= dado.exp * 1000) {
+                //console.log("DATA", Date.now());
+                //console.log("IAt", dado.exp * 1000);
+                //console.log("TESTE", (Date.now() >= dado.exp * 1000));
+                return { isValid: false }
+            }
             const [result] = await authDb.read({ username: dado.user, })
             return { isValid: (result ? true : false) }
-
-        }
+        },
+        verifyOptions: { algorithms: ['HS256'] }
     })
     app.auth.default('jwt')
 

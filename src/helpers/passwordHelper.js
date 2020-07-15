@@ -2,7 +2,7 @@ const Bcrypt = require('bcrypt')
 const {
     promisify
 } = require('util')
-const SALT = 3
+const SALT = parseInt(process.env.SALT)
 const hashAsync = promisify(Bcrypt.hash)
 const compareAsync = promisify(Bcrypt.compare)
 

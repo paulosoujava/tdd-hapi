@@ -29,7 +29,7 @@ class MongoDB extends ICrud {
     }
 
     static connect() {
-        Mongoose.connect('mongodb://localhost:27017/herois', {
+        Mongoose.connect(process.env.URL_MONGO, {
             useNewUrlParser: true,
             useUnifiedTopology: true
         }, (err) => {

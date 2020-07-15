@@ -1,6 +1,7 @@
 const BaseRoute = require('./base/baseRoute'),
     Joi = require("@hapi/joi"),
-    Boom = require("boom")
+    Boom = require("boom"),
+    Models = require('./models/models_responses')
 
 
 const failAction = (r, h, e) => { throw e }
@@ -9,25 +10,13 @@ const headers = Joi.object({
     authorization: Joi.string().required()
 }).unknown()
 
-const ModelUser = Joi.object({
-    id: Joi.string().description('abcd123efg456'),
-    nome: Joi.string().description("Chapolin Colorado"),
-    poder: Joi.string().description("marreta bionica"),
-}).label('Model_User');
-
-const Model500 = Joi.object({
-    message: Joi.string().description('Erro Interno')
-}).label('Model500');
-
-const Model400 = Joi.object({
-    message: Joi.string().description('Bad Request')
-}).label('Model400');
 
 
 class AppRoutes extends BaseRoute {
     constructor(db) {
         super()
         this._db = db
+        this._HERO = 'HERO'
     }
 
     _message() {
@@ -65,18 +54,21 @@ class AppRoutes extends BaseRoute {
                     'hapi-swagger': {
                         responses: {
                             500: {
-                                description: 'Retorna um erro do servidor, algo não saiu como planejado',
-                                schema: Model500
+                                description: Models.description(500, this._HERO),
+                                schema: Models.schema(500, this._HERO)
                             },
                             400: {
-                                description: 'Uma má requisição foi feita, todos os paramentros devem ser enviados username min 3 max 15 e senha min 3 max 8',
-                                schema: Model400
+                                description: Models.description(400, this._AUTH),
+                                schema: Models.schema(400, this._AUTH)
                             },
                             200: {
-                                description: 'Pode comemorar por que deu tudo certo e um token foi retornado para você utilizar na api',
-                                schema: ModelUser
+                                description: Models.description(200, this._AUTH),
+                                schema: Models.schema(200, this._AUTH)
                             },
-
+                            401: {
+                                description: Models.description(401, this._AUTH),
+                                schema: Models.schema(401, this._AUTH)
+                            }
                         }
                     }
                 }
@@ -88,24 +80,6 @@ class AppRoutes extends BaseRoute {
         return {
             path: '/herois',
             method: 'POST',
-            config: {
-                tags: ['api'],
-                description: 'Cadastra um heroi, com nome e poder',
-                notes: 'Com o method POST você DEVE enviar um nome e um poder',
-                plugins: {
-                    'hapi-swagger': {
-                        payloadType: 'form'
-                    }
-                },
-                validate: {
-                    failAction,
-                    headers,
-                    payload: Joi.object({
-                        nome: Joi.string().min(3).max(100).required(),
-                        poder: Joi.string().min(3).max(100).required(),
-                    })
-                }
-            },
             handler: async(request) => {
                 try {
                     const { nome, poder } = request.payload
@@ -116,6 +90,43 @@ class AppRoutes extends BaseRoute {
                     /* istanbul ignore next */
                     return Boom.internal()
                 }
+            },
+            config: {
+                tags: ['api'],
+                description: 'Cadastra um heroi, com nome e poder',
+                notes: 'Com o method POST você DEVE enviar um nome e um poder',
+                plugins: {
+                    payloadType: 'form',
+                    'hapi-swagger': {
+                        responses: {
+                            500: {
+                                description: Models.description(500, this._HERO),
+                                schema: Models.schema(500, this._HERO)
+                            },
+                            400: {
+                                description: Models.description(400, this._AUTH),
+                                schema: Models.schema(400, this._AUTH)
+                            },
+                            200: {
+                                description: Models.description(200, this._AUTH),
+                                schema: Models.schema(200, this._AUTH)
+                            },
+                            401: {
+                                description: Models.description(401, this._AUTH),
+                                schema: Models.schema(401, this._AUTH)
+                            }
+
+                        }
+                    }
+                },
+                validate: {
+                    failAction,
+                    headers,
+                    payload: Joi.object({
+                        nome: Joi.string().min(3).max(100).required(),
+                        poder: Joi.string().min(3).max(100).required(),
+                    })
+                }
             }
         }
 
@@ -125,6 +136,21 @@ class AppRoutes extends BaseRoute {
         return {
             path: '/herois/{id}',
             method: 'PATCH',
+            handler: async(request) => {
+                try {
+                    const { payload } = request
+                    const { id } = request.params
+                    const dadosString = JSON.stringify(payload)
+                    const dados = JSON.parse(dadosString)
+                    const result = await this._db.update(id, dados)
+                        /* istanbul ignore next */
+                    return { message: this._message(), modified: result.nModified }
+
+                } catch (err) {
+                    /* istanbul ignore next */
+                    return Boom.internal()
+                }
+            },
             config: {
                 validate: {
                     failAction,
@@ -136,21 +162,6 @@ class AppRoutes extends BaseRoute {
                         nome: Joi.string().min(3).max(100),
                         poder: Joi.string().min(3).max(100),
                     })
-                },
-                handler: async(request) => {
-                    try {
-                        const { payload } = request
-                        const { id } = request.params
-                        const dadosString = JSON.stringify(payload)
-                        const dados = JSON.parse(dadosString)
-                        const result = await this._db.update(id, dados)
-                            /* istanbul ignore next */
-                        return { message: this._message(), modified: result.nModified }
-
-                    } catch (err) {
-                        /* istanbul ignore next */
-                        return Boom.internal()
-                    }
                 }
             }
         }
@@ -160,6 +171,21 @@ class AppRoutes extends BaseRoute {
         return {
             path: '/herois/{id}',
             method: 'PUT',
+            handler: async(request) => {
+                try {
+                    const { payload } = request
+                    const { id } = request.params
+                    const dadosString = JSON.stringify(payload)
+                    const dados = JSON.parse(dadosString)
+                    const result = await this._db.update(id, dados)
+                        /* istanbul ignore next */
+                    return { message: this._message(), modified: result.nModified }
+
+                } catch (err) {
+                    /* istanbul ignore next */
+                    return Boom.internal()
+                }
+            },
             config: {
                 validate: {
                     failAction,
@@ -171,21 +197,6 @@ class AppRoutes extends BaseRoute {
                         nome: Joi.string().min(3).max(100).required(),
                         poder: Joi.string().min(3).max(100).required(),
                     })
-                },
-                handler: async(request) => {
-                    try {
-                        const { payload } = request
-                        const { id } = request.params
-                        const dadosString = JSON.stringify(payload)
-                        const dados = JSON.parse(dadosString)
-                        const result = await this._db.update(id, dados)
-                            /* istanbul ignore next */
-                        return { message: this._message(), modified: result.nModified }
-
-                    } catch (err) {
-                        /* istanbul ignore next */
-                        return Boom.internal()
-                    }
                 }
             }
         }
@@ -195,15 +206,6 @@ class AppRoutes extends BaseRoute {
         return {
             path: '/herois/{id}',
             method: 'DELETE',
-            config: {
-                validate: {
-                    failAction,
-                    headers,
-                    params: Joi.object({
-                        id: Joi.string().required()
-                    })
-                }
-            },
             handler: async(request) => {
                 try {
                     const { id } = request.params
@@ -212,6 +214,15 @@ class AppRoutes extends BaseRoute {
                 } catch (error) {
                     /* istanbul ignore next */
                     return Boom.internal()
+                }
+            },
+            config: {
+                validate: {
+                    failAction,
+                    headers,
+                    params: Joi.object({
+                        id: Joi.string().required()
+                    })
                 }
             }
         }
