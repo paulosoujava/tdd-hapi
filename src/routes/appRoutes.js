@@ -12,6 +12,7 @@ const headers = Joi.object({
 
 
 
+
 class AppRoutes extends BaseRoute {
     constructor(db) {
         super()
@@ -22,26 +23,14 @@ class AppRoutes extends BaseRoute {
     _message() {
         return 'acao concluida com sucesso'
     }
-    _errors() {
+    _errors(number) {
         return [{
-            500: {
-                description: Models.description(500, this._HERO),
-                schema: Models.schema(500, this._HERO)
-            },
-            400: {
-                description: Models.description(400, this._AUTH),
-                schema: Models.schema(400, this._AUTH)
-            },
-            200: {
-                description: Models.description(200, this._AUTH),
-                schema: Models.schema(200, this._AUTH)
-            },
-            401: {
-                description: Models.description(401, this._AUTH),
-                schema: Models.schema(401, this._AUTH)
-            }
+            description: Models.description(number, this._HERO),
+            schema: Models.schema(number, this._HERO)
         }]
     }
+
+
 
     list() {
         return {
@@ -56,27 +45,7 @@ class AppRoutes extends BaseRoute {
                     return Boom.internal()
                 }
             },
-            config: {
-                validate: {
-                    failAction,
-                    headers,
-                    query: Joi.object({
-                        skip: Joi.number().integer().default(0),
-                        limit: Joi.number().integer().default(10),
-                        nome: Joi.string().min(3).max(100),
-                    })
-                },
-                tags: ['api'],
-                description: Models.tags(this._HERO, 'list_description'),
-                notes: Models.tags(this._HERO, 'list_notes'),
-                plugins: {
-                    payloadType: 'form',
-                    'hapi-swagger': {
-                        responses: this._errors
-
-                    }
-                }
-            }
+            config: Models.config(this._HERO, 'list')
         }
     }
 
@@ -95,25 +64,7 @@ class AppRoutes extends BaseRoute {
                     return Boom.internal()
                 }
             },
-            config: {
-                tags: ['api'],
-                description: Models.tags(this._HERO, 'create_description'),
-                notes: Models.tags(this._HERO, 'create_notes'),
-                plugins: {
-                    payloadType: 'form',
-                    'hapi-swagger': {
-                        responses: this._errors
-                    }
-                },
-                validate: {
-                    failAction,
-                    headers,
-                    payload: Joi.object({
-                        nome: Joi.string().min(3).max(100).required(),
-                        poder: Joi.string().min(3).max(100).required(),
-                    })
-                }
-            }
+            config: Models.config(this._HERO, 'create')
         }
 
     }

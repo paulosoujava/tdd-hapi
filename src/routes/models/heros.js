@@ -1,5 +1,13 @@
 Joi = require("@hapi/joi")
 
+const failAction = (r, h, e) => { throw e }
+
+const headers = Joi.object({
+    authorization: Joi.string().required()
+}).unknown()
+
+//CLASSE RESPONSAVEL PELA DOCUMENTACAO DO SWAGGER E PELO VALIDACAO
+//O IDEAL Ë TIRAR A VALIDACAO DAQUI< E DEIXAR SOMENTE A DOCUMENTACAO
 class HerosResponse {
     static heroReturns(witch) {
         switch (witch) {
@@ -52,6 +60,67 @@ class HerosResponse {
             case 'list_notes':
                 return 'Rotorna todos os usuário do BD necessita de um token para obter livre acesso'
 
+        }
+    }
+    static errors(number) {
+        return {
+            description: this.heroDesctiptions(number),
+            schema: this.heroReturns(number)
+        }
+    }
+    static configSwaggerAndValidation(which) {
+        switch (which) {
+            case 'list':
+                return {
+                    tags: ['api'],
+                    description: this.heroApiTags('create_description'),
+                    notes: this.heroApiTags('create_notes'),
+                    plugins: {
+                        payloadType: 'form',
+                        'hapi-swagger': {
+                            responses: {
+                                500: this.errors(500),
+                                400: this.errors(400),
+                                200: this.errors(200),
+                                401: this.errors(401),
+                            }
+                        }
+                    },
+                    validate: {
+                        failAction,
+                        headers,
+                        query: Joi.object({
+                            skip: Joi.number().integer().default(0),
+                            limit: Joi.number().integer().default(10),
+                            nome: Joi.string().min(3).max(100),
+                        })
+                    },
+                }
+            case 'create':
+                return {
+                    tags: ['api'],
+                    description: this.heroApiTags('create_description'),
+                    notes: this.heroApiTags('create_notes'),
+                    plugins: {
+                        payloadType: 'form',
+                        'hapi-swagger': {
+                            responses: {
+                                500: this.errors(500),
+                                400: this.errors(400),
+                                200: this.errors(200),
+                                401: this.errors(401),
+                            }
+                        }
+                    },
+                    validate: {
+                        failAction,
+                        headers,
+                        payload: Joi.object({
+                            nome: Joi.string().min(3).max(100).required(),
+                            poder: Joi.string().min(3).max(100).required(),
+                        })
+                    }
+                }
         }
     }
 
