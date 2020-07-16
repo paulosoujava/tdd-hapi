@@ -19,7 +19,14 @@ class Models {
         }
 
     }
-
+    static tags(witch, route) {
+        switch (route) {
+            case 'AUTH':
+                return require('./auth').authDesctiptions(witch)
+            case 'HERO':
+                return require('./heros').heroApiTags(witch)
+        }
+    }
 
 }
 module.exports = Models

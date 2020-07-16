@@ -41,5 +41,20 @@ class HerosResponse {
 
         }
     }
+    static heroApiTags(witch) {
+        switch (witch) {
+            case 'create_description':
+                return 'Cadastra um heroi, com nome e poder'
+            case 'create_notes':
+                return 'Com o method POST você DEVE enviar um nome e um poder'
+            case 'list_description':
+                return 'GET USERS'
+            case 'list_notes':
+                return 'Rotorna todos os usuário do BD necessita de um token para obter livre acesso'
+
+        }
+    }
+
+
 }
 module.exports = HerosResponse

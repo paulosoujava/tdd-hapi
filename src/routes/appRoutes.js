@@ -22,6 +22,26 @@ class AppRoutes extends BaseRoute {
     _message() {
         return 'acao concluida com sucesso'
     }
+    _errors() {
+        return [{
+            500: {
+                description: Models.description(500, this._HERO),
+                schema: Models.schema(500, this._HERO)
+            },
+            400: {
+                description: Models.description(400, this._AUTH),
+                schema: Models.schema(400, this._AUTH)
+            },
+            200: {
+                description: Models.description(200, this._AUTH),
+                schema: Models.schema(200, this._AUTH)
+            },
+            401: {
+                description: Models.description(401, this._AUTH),
+                schema: Models.schema(401, this._AUTH)
+            }
+        }]
+    }
 
     list() {
         return {
@@ -47,29 +67,13 @@ class AppRoutes extends BaseRoute {
                     })
                 },
                 tags: ['api'],
-                description: 'GET USERS',
-                notes: 'Rotorna todos os usuário do BD necessita de um token para obter livre acesso',
+                description: Models.tags(this._HERO, 'list_description'),
+                notes: Models.tags(this._HERO, 'list_notes'),
                 plugins: {
                     payloadType: 'form',
                     'hapi-swagger': {
-                        responses: {
-                            500: {
-                                description: Models.description(500, this._HERO),
-                                schema: Models.schema(500, this._HERO)
-                            },
-                            400: {
-                                description: Models.description(400, this._AUTH),
-                                schema: Models.schema(400, this._AUTH)
-                            },
-                            200: {
-                                description: Models.description(200, this._AUTH),
-                                schema: Models.schema(200, this._AUTH)
-                            },
-                            401: {
-                                description: Models.description(401, this._AUTH),
-                                schema: Models.schema(401, this._AUTH)
-                            }
-                        }
+                        responses: this._errors
+
                     }
                 }
             }
@@ -93,30 +97,12 @@ class AppRoutes extends BaseRoute {
             },
             config: {
                 tags: ['api'],
-                description: 'Cadastra um heroi, com nome e poder',
-                notes: 'Com o method POST você DEVE enviar um nome e um poder',
+                description: Models.tags(this._HERO, 'create_description'),
+                notes: Models.tags(this._HERO, 'create_notes'),
                 plugins: {
                     payloadType: 'form',
                     'hapi-swagger': {
-                        responses: {
-                            500: {
-                                description: Models.description(500, this._HERO),
-                                schema: Models.schema(500, this._HERO)
-                            },
-                            400: {
-                                description: Models.description(400, this._AUTH),
-                                schema: Models.schema(400, this._AUTH)
-                            },
-                            200: {
-                                description: Models.description(200, this._AUTH),
-                                schema: Models.schema(200, this._AUTH)
-                            },
-                            401: {
-                                description: Models.description(401, this._AUTH),
-                                schema: Models.schema(401, this._AUTH)
-                            }
-
-                        }
+                        responses: this._errors
                     }
                 },
                 validate: {
