@@ -32,7 +32,7 @@ describe('Suite de testes Auth', function() {
             url: '/login',
             payload: {
                 username: 'paulo',
-                password: 'Paulo@123'
+                password: '123'
 
             }
         })
@@ -131,7 +131,7 @@ describe('Suite de testes Auth', function() {
         assert.deepEqual(res.result.error, 'Precondition Failed')
         assert.deepEqual(res.result.message, 'Verifique o usuário e tente novamente')
     })
-    it.only('Deve mudar a senha e gerar um novo token " ', async() => {
+    it('Deve mudar a senha e gerar um novo token " ', async() => {
         const res = await app.inject({
             method: 'POST',
             url: '/login/recovery',
