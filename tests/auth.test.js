@@ -102,4 +102,50 @@ describe('Suite de testes Auth', function() {
         assert.deepEqual(statusCode, 401)
 
     })
+    it('Deve retornar uma mensagem de acao realizada com sucesso code 200', async() => {
+        const res = await app.inject({
+                method: 'POST',
+                url: '/login/forget',
+                payload: {
+                    email: 'paulo'
+
+                }
+            })
+            //console.log(res);
+        const statusCode = res.statusCode
+        assert.deepEqual(statusCode, 200)
+        assert.deepEqual(res.result.message, 'acao realizada com sucesso')
+    })
+    it('Deve retornar um Precondition Failed e code 412" ', async() => {
+        const res = await app.inject({
+                method: 'POST',
+                url: '/login/forget',
+                payload: {
+                    email: 'paulos'
+
+                }
+            })
+            //console.log(res);
+        const statusCode = res.statusCode
+        assert.deepEqual(statusCode, 412)
+        assert.deepEqual(res.result.error, 'Precondition Failed')
+        assert.deepEqual(res.result.message, 'Verifique o usuário e tente novamente')
+    })
+    it.only('Deve mudar a senha e gerar um novo token " ', async() => {
+        const res = await app.inject({
+            method: 'POST',
+            url: '/login/recovery',
+            payload: {
+                id: '5f0de2cc4c60cf8c99b232fa',
+                password: '123'
+
+            }
+        })
+
+        const statusCode = res.statusCode
+        assert.ok(res.result.modified === 1)
+        assert.ok(res.result.token.length > 10)
+        assert.deepEqual(statusCode, 200)
+        assert.deepEqual(res.result.message, 'acao realizada com sucesso')
+    })
 })

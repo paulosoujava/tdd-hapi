@@ -1,38 +1,25 @@
 const BaseRoute = require('./base/baseRoute'),
-    Joi = require("@hapi/joi"),
     Boom = require("boom"),
-    Models = require('./models/models_responses')
-
-
-const failAction = (r, h, e) => { throw e }
-
-const headers = Joi.object({
-    authorization: Joi.string().required()
-}).unknown()
-
-
+    SwaggerDocumentation = require('./models/hero/swaggerDocumentation'),
+    configList = require('./models/hero/swaggerList'),
+    configCreate = require('./models/hero/swaggerCreate'),
+    configUpdate = require('./models/hero/swaggerUpdate'),
+    configUpdateAll = require('./models/hero/swaggerUpdateAll'),
+    configDelete = require('./models/hero/swaggerDelete')
 
 
 class AppRoutes extends BaseRoute {
     constructor(db) {
         super()
         this._db = db
-        this._HERO = 'HERO'
     }
 
     _message() {
         return 'acao concluida com sucesso'
     }
-    _errors(number) {
-        return [{
-            description: Models.description(number, this._HERO),
-            schema: Models.schema(number, this._HERO)
-        }]
-    }
-
-
 
     list() {
+
         return {
             path: '/herois',
             method: 'GET',
@@ -45,7 +32,7 @@ class AppRoutes extends BaseRoute {
                     return Boom.internal()
                 }
             },
-            config: Models.config(this._HERO, 'list')
+            config: configList.configSwaggerAndValidation
         }
     }
 
@@ -64,7 +51,7 @@ class AppRoutes extends BaseRoute {
                     return Boom.internal()
                 }
             },
-            config: Models.config(this._HERO, 'create')
+            config: configCreate.configSwaggerAndValidation
         }
 
     }
@@ -88,19 +75,8 @@ class AppRoutes extends BaseRoute {
                     return Boom.internal()
                 }
             },
-            config: {
-                validate: {
-                    failAction,
-                    headers,
-                    params: Joi.object({
-                        id: Joi.string().required()
-                    }),
-                    payload: Joi.object({
-                        nome: Joi.string().min(3).max(100),
-                        poder: Joi.string().min(3).max(100),
-                    })
-                }
-            }
+            config: configUpdate.configSwaggerAndValidation
+
         }
     }
 
@@ -123,19 +99,7 @@ class AppRoutes extends BaseRoute {
                     return Boom.internal()
                 }
             },
-            config: {
-                validate: {
-                    failAction,
-                    headers,
-                    params: Joi.object({
-                        id: Joi.string().required()
-                    }),
-                    payload: Joi.object({
-                        nome: Joi.string().min(3).max(100).required(),
-                        poder: Joi.string().min(3).max(100).required(),
-                    })
-                }
-            }
+            config: configUpdateAll.configSwaggerAndValidation
         }
     }
 
@@ -153,15 +117,9 @@ class AppRoutes extends BaseRoute {
                     return Boom.internal()
                 }
             },
-            config: {
-                validate: {
-                    failAction,
-                    headers,
-                    params: Joi.object({
-                        id: Joi.string().required()
-                    })
-                }
-            }
+            config: configDelete.configSwaggerAndValidation
+
+
         }
     }
 }

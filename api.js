@@ -53,7 +53,7 @@ async function main() {
     const swaggerOptions = {
         info: {
             title: 'Test API Documentation',
-            version: '5.14.3',
+            version: '1.0.3',
             contact: {
                 name: 'Paulo Oliveira',
                 email: 'paulosoujava@gmail.com'
